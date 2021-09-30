@@ -14,7 +14,7 @@ const mount = (el, props, Wrapped) => {
   } else {
     Application = <Wrapped />;
   }  
-  ReactDOM.render(Application, el);
+  ReactDOM.render(<p>Hi</p>, el);
 };
 
 // we are running the project in isolation
