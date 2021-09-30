@@ -13,7 +13,7 @@ const mount = (el, props, Wrapped) => {
     Application = <App {...pr} />;
   } else {
     Application = <Wrapped />;
-  }
+  }  
   ReactDOM.render(Application, el);
 };
 
