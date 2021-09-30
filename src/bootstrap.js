@@ -14,7 +14,7 @@ const mount = (el, props, Wrapped) => {
   } else {
     Application = <Wrapped />;
   }  
-  ReactDOM.render(<p>Hi</p>, el);
+  ReactDOM.render(Application, el);
 };
 
 // we are running the project in isolation
@@ -29,3 +29,4 @@ if (el) {
 }
 
 export default mount;
+ 
