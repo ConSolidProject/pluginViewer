@@ -19,6 +19,7 @@
     "buffer": "^6.0.3",
     "consolid": "^1.0.2",
     "consolid-react-ui": "0.0.11",
+    "core-js": "^3.18.1",
     "crypto-browserify": "^3.12.0",
     "events": "^3.3.0",
     "graphql-ld-comunica-solid": "^1.0.1",
