@@ -82,14 +82,13 @@ const LBDviewer = (props) => {
       const queryLE = `
           PREFIX lbd: <https://lbdserver.org/vocabulary#>
           PREFIX dcat: <http://www.w3.org/ns/dcat#>
-          SELECT ?elementId WHERE {
+          SELECT DISTINCT ?elementId WHERE {
             <${element}> lbd:hasLinkElement ?le . ?le lbd:hasDocument <${model.main}> ; lbd:hasIdentifier ?identifier . ?identifier lbd:identifier ?elementId . 
           }`;
 
       const le_results = await se_qe.query(queryLE, {
-        sources: [store],
+        sources: [model.artefactRegistry],
       });
-
       const bindings = await le_results.bindings();
       return bindings.map((b) => {
         return {
