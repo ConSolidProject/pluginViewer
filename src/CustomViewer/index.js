@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Viewer from "./Viewer";
-import {getAliases} from 'consolid'
+import {getAliases, getMyArtefactRegistry} from 'consolid'
 const newEngine = require("@comunica/actor-init-sparql").newEngine;
 const v4 = require("uuid");
 
@@ -167,6 +167,8 @@ const LBDviewer = (props) => {
   }
 
   async function onSelect(items) {
+    const myArtReg = await getMyArtefactRegistry(session, project)
+    console.log(`myArtReg`, myArtReg)
     const qid = v4();
     setQueryId(qid);
     setSelection([]);
@@ -189,10 +191,11 @@ const LBDviewer = (props) => {
       ?id lbd:identifier "${item}" .
     }`;
 
-      const le_results = await queryEngine.query(linkElementQuery, {sources: [store]});
+      const le_results = await queryEngine.query(linkElementQuery, {sources: [...gltf.map(e => e.artefactRegistry), myArtReg]});
 
       le_results.bindingsStream.on("data", async (binding) => {
         const art = binding.get("?art").id;
+        console.log(`art`, art)
         setSelection((sel) => [
           ...sel,
           {
@@ -200,8 +203,38 @@ const LBDviewer = (props) => {
             global: art,
           },
         ]);
-        setSelectedElements((sel) => [
+
+      // find link element in gltf.props.ttl
+      const sameAsQuery = `
+      PREFIX owl: <http://www.w3.org/2002/07/owl#>
+      SELECT ?alias WHERE {
+        ?alias owl:sameAs <${art}>.
+      }`;
+
+      const sameResults = await queryEngine.query(sameAsQuery, {sources: [...activeResources.map(e => e.artefactRegistry), myArtReg]});
+      const sameBindings = await sameResults.bindings()
+      const aliases = sameBindings.map(element => {
+        return {global: [element.get('?alias').id], selectionId: qid}        
+      });
+
+      // const sameAsQuery2 = `
+      // PREFIX owl: <http://www.w3.org/2002/07/owl#>
+      // SELECT ?alias WHERE {
+      //   <${art}> owl:sameAs ?alias
+      // }`;
+
+
+      // const sameResults2 = await queryEngine.query(sameAsQuery2, {sources: [...activeResources.map(e => e.artefactRegistry), myArtReg]});
+      // const sameBindings2 = await sameResults2.bindings()
+      // const aliases2 = sameBindings2.map(element => {
+      //   return {global: [element.get('?alias').id], selectionId: qid}        
+      // });
+
+      // const allAlias = [...new Set([...aliases2, aliases])]
+      // console.log(`allAlias`, allAlias)
+      setSelectedElements((sel) => [
           ...sel,
+          ...aliases,
           { global: [art], selectionId: qid }, // you need to find the owl:sameAs aliases as well when no global artefactregistry is present
         ]);
       });

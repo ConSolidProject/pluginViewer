@@ -17,7 +17,7 @@
     "assert": "^2.0.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
-    "consolid": "^1.0.2",
+    "consolid": "^1.0.6",
     "consolid-react-ui": "0.0.11",
     "core-js": "^3.18.1",
     "crypto-browserify": "^3.12.0",
