@@ -167,8 +167,11 @@ const LBDviewer = (props) => {
   }
 
   async function onSelect(items) {
-    const myArtReg = await getMyArtefactRegistry(session, project)
-    console.log(`myArtReg`, myArtReg)
+    let myArtReg
+    if (session.info.isLoggedIn) {
+      myArtReg = await getMyArtefactRegistry(session, project)
+      console.log(`myArtReg`, myArtReg)
+    }
     const qid = v4();
     setQueryId(qid);
     setSelection([]);
@@ -191,7 +194,9 @@ const LBDviewer = (props) => {
       ?id lbd:identifier "${item}" .
     }`;
 
-      const le_results = await queryEngine.query(linkElementQuery, {sources: [...gltf.map(e => e.artefactRegistry), myArtReg]});
+    const s = [...gltf.map(e => e.artefactRegistry)]
+    if (myArtReg) s.push(myArtReg)
+      const le_results = await queryEngine.query(linkElementQuery, {sources: s});
 
       le_results.bindingsStream.on("data", async (binding) => {
         const art = binding.get("?art").id;
@@ -211,12 +216,14 @@ const LBDviewer = (props) => {
         ?alias owl:sameAs <${art}>.
       }`;
 
-      const sameResults = await queryEngine.query(sameAsQuery, {sources: [...activeResources.map(e => e.artefactRegistry), myArtReg]});
+      const sr = [...activeResources.map(e => e.artefactRegistry)]
+      if (myArtReg) sr.push(myArtReg)
+      const sameResults = await queryEngine.query(sameAsQuery, {sources: sr});
       const sameBindings = await sameResults.bindings()
       const aliases = sameBindings.map(element => {
         return {global: [element.get('?alias').id], selectionId: qid}        
       });
-
+      console.log(`aliases`, aliases)
       // const sameAsQuery2 = `
       // PREFIX owl: <http://www.w3.org/2002/07/owl#>
       // SELECT ?alias WHERE {
