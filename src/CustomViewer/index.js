@@ -191,7 +191,6 @@ const LBDviewer = (props) => {
     let myArtReg
     if (session.info.isLoggedIn) {
       myArtReg = await getMyArtefactRegistry(session, project)
-      console.log(`myArtReg`, myArtReg)
     }
     const qid = v4();
     setQueryId(qid);
@@ -221,7 +220,6 @@ const LBDviewer = (props) => {
 
       le_results.bindingsStream.on("data", async (binding) => {
         const art = binding.get("?art").id;
-        console.log(`art`, art)
         setSelection((sel) => [
           ...sel,
           {
@@ -244,7 +242,6 @@ const LBDviewer = (props) => {
       const aliases = sameBindings.map(element => {
         return {global: [element.get('?alias').id], selectionId: qid}        
       });
-      console.log(`aliases`, aliases)
       // const sameAsQuery2 = `
       // PREFIX owl: <http://www.w3.org/2002/07/owl#>
       // SELECT ?alias WHERE {
