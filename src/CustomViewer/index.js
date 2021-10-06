@@ -75,41 +75,62 @@ const LBDviewer = (props) => {
   const [gltf, setGltf] = useState([]);
   const [selection, setSelection] = useState([]);
   const [queryId, setQueryId] = useState(selectionId);
+  const [localId, setLocalId] = useState(null)
 
   async function getLocalIdentifier(element, store) {
-    for (const model of gltf) {
-      const se_qe = newEngine();
-      const queryLE = `
-          PREFIX lbd: <https://lbdserver.org/vocabulary#>
-          PREFIX dcat: <http://www.w3.org/ns/dcat#>
-          SELECT DISTINCT ?elementId WHERE {
-            <${element}> lbd:hasLinkElement ?le . ?le lbd:hasDocument <${model.main}> ; lbd:hasIdentifier ?identifier . ?identifier lbd:identifier ?elementId . 
-          }`;
-
-      const le_results = await se_qe.query(queryLE, {
-        sources: [model.artefactRegistry],
-      });
-      const bindings = await le_results.bindings();
-      return bindings.map((b) => {
-        return {
-          local: b.get("?elementId").id.replaceAll('"', ""),
-          global: element,
-        };
-      });
+    try {
+      for (const model of gltf) {
+        const se_qe = newEngine();
+        const queryLE = `
+            PREFIX lbd: <https://lbdserver.org/vocabulary#>
+            PREFIX dcat: <http://www.w3.org/ns/dcat#>
+            SELECT DISTINCT ?elementId WHERE {
+              <${element}> lbd:hasLinkElement ?le . ?le lbd:hasDocument <${model.main}> ; lbd:hasIdentifier ?identifier . ?identifier lbd:identifier ?elementId . 
+            }`;
+  
+        const le_results = await se_qe.query(queryLE, {
+          sources: [store],
+        });
+        const bindings = await le_results.bindings(le_results)
+        return bindings.map((b) => {
+          return {
+            local: b.get("?elementId").id.replaceAll('"', ""),
+            global: element,
+          };
+        });
+      }
+    } catch (error) {
+      console.log(`error in viewer`, error)
     }
   }
+
+  // async function findBindings(res) {
+  //   return new Promise((reject, resolve) => {
+  //     const data = []
+  //     res.bindingsStream.on('data', (d) => {
+  //       data.push(d)
+  //     })
+  //     res.bindingsStream.on('end', () => {
+  //       resolve(data)
+  //     })
+  //     res.bindingsStream.on('error', (err) => {
+  //       console.log('error in bindings', error)
+  //       reject(error)
+  //     })
+  //   })
+  // }
 
   async function setViewerSelection(arr) {
     const promisified = arr.filter((el) => !selection.map(i => i.global).includes(el.global)).map((el) => el.global.map(art => getLocalIdentifier(art, store)));
     const selectionArray = await Promise.all(promisified.flat());
-    setSelection(selectionArray.flat());
+    if (selectionArray.length > 0) {
+      setSelection(selectionArray.flat());
+    }
   }
 
   useEffect(() => {
     if (selectedElements.length > 0) {
       setViewerSelection(selectedElements);
-    } else {
-      setViewerSelection([])
     }
   }, [selectedElements]);
 
@@ -177,7 +198,7 @@ const LBDviewer = (props) => {
     setSelection([]);
     setSelectedElements([]);
     setSelectionId(qid);
-
+    setLocalId(qid)
     // for (const i of items) {
     //   await getAliases(i, gltf[0], activeResources, {project: true, artefactRegistry: project.global.replace("/profile/card#me", "/data/artefactRegistry.ttl")}, session)
     // }
@@ -194,9 +215,9 @@ const LBDviewer = (props) => {
       ?id lbd:identifier "${item}" .
     }`;
 
-    const s = [...gltf.map(e => e.artefactRegistry)]
-    if (myArtReg) s.push(myArtReg)
-      const le_results = await queryEngine.query(linkElementQuery, {sources: s});
+    // const s = [...gltf.map(e => e.artefactRegistry)]
+    // if (myArtReg) s.push(myArtReg)
+      const le_results = await queryEngine.query(linkElementQuery, {sources: [store]});
 
       le_results.bindingsStream.on("data", async (binding) => {
         const art = binding.get("?art").id;
@@ -216,9 +237,9 @@ const LBDviewer = (props) => {
         ?alias owl:sameAs <${art}>.
       }`;
 
-      const sr = [...activeResources.map(e => e.artefactRegistry)]
-      if (myArtReg) sr.push(myArtReg)
-      const sameResults = await queryEngine.query(sameAsQuery, {sources: sr});
+      // const sr = [...activeResources.map(e => e.artefactRegistry)]
+      // if (myArtReg) sr.push(myArtReg)
+      const sameResults = await queryEngine.query(sameAsQuery, {sources: [store]});
       const sameBindings = await sameResults.bindings()
       const aliases = sameBindings.map(element => {
         return {global: [element.get('?alias').id], selectionId: qid}        
@@ -240,7 +261,7 @@ const LBDviewer = (props) => {
       // const allAlias = [...new Set([...aliases2, aliases])]
       // console.log(`allAlias`, allAlias)
       setSelectedElements((sel) => [
-          ...sel,
+        ...sel,
           ...aliases,
           { global: [art], selectionId: qid }, // you need to find the owl:sameAs aliases as well when no global artefactregistry is present
         ]);
