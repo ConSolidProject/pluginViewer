@@ -21,9 +21,8 @@ export default class LBDviewer extends Component {
         let extension = "gltf"
 
         let loader
-        if (extension.toLowerCase() === 'gltf') {
             loader = new GLTFLoaderPlugin(viewer);
-        } // else if (extension.toLowerCase() === 'xkt') {
+         // else if (extension.toLowerCase() === 'xkt') {
         //     loader = new XKTLoaderPlugin(viewer)
         //     modelProps.metaModelSrc = this.props.metaModel
         // }

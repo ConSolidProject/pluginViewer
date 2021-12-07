@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import App from "../App";
 import {
   projects as p,
-  activeResources as sel,
+  datasets as sel,
   selectedElements as se,
   selectionId as sId,
   store as st,
@@ -48,7 +48,7 @@ export default function Isolated() {
 function standaloneRunner(WrappedComponent, module) {
   return function Wrapped() {
     const [openOptions, setOpenOptions] = useState(true)
-    const [activeResources, setActiveResources] = useRecoilState(sel);
+    const [datasets, setDatasets] = useRecoilState(sel);
     const [selectedElements, setSelectedElements] = useRecoilState(se);
     const [projects, setProjects] = useRecoilState(p);
     const [selectionId, setSelectionId] = useRecoilState(sId);
@@ -58,8 +58,8 @@ function standaloneRunner(WrappedComponent, module) {
     const sharedProps = {
       projects,
       setProjects,
-      activeResources,
-      setActiveResources,
+      datasets,
+      setDatasets,
       selectedElements,
       setSelectedElements,
       selectionId,

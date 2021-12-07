@@ -19,8 +19,8 @@ const projects = atom({
     default: ["https://pod.lbdserver.org/jeroen/lbd/f65db6eb-fc13-4ee7-955a-cf93fdf29d5b/"]
 })
 
-const activeResources = atom({
-    key: "activeResources",
+const datasets = atom({
+    key: "datasets",
     default: [{main: "https://pod.lbdserver.org/pieter/lbd/f65db6eb-fc13-4ee7-955a-cf93fdf29d5b/architectural_duplex.gltf", meta: "https://pod.lbdserver.org/pieter/lbd/f65db6eb-fc13-4ee7-955a-cf93fdf29d5b/architectural_duplex.gltf.props.ttl", artefactRegistry: "https://pod.lbdserver.org/pieter/lbd/f65db6eb-fc13-4ee7-955a-cf93fdf29d5b/artefactRegistry.ttl"}]
 })
 
@@ -39,4 +39,4 @@ const trigger = atom({
     default: '0'
 })
 
-export {session, projects, activeResources, selectedElements, selectionId, trigger, store}
+export {session, projects, datasets, selectedElements, selectionId, trigger, store}

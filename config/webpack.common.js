@@ -54,10 +54,7 @@ module.exports = {
       zlib: require.resolve("browserify-zlib"),
       events: require.resolve("events/"),
       path: require.resolve("path-browserify"),
-    },
-    // alias: {
-    //   consolid: "/home/jmauwerb/Documents/LBDserver/consolid"
-    // }
+    }
   },
   module: {
     rules: [
