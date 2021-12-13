@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Viewer from "./Viewer";
-import {getAliases, getMyArtefactRegistry, findReferenceEndpoints} from 'consolid'
+import {getAliases, getMyArtefactRegistry, findReferenceEndpoints, getLdpMembers} from 'consolid'
 const newEngine = require("@comunica/actor-init-sparql").newEngine;
 const v4 = require("uuid");
 
@@ -145,32 +145,30 @@ const LBDviewer = (props) => {
     // const selectionArray = await Promise.all(promisified.flat());
     const selectionArray = []
     for (const model of models) {
-      let selection = arr.map(thing => thing.references).flat().filter(t => t.dataset == model.dataset).map(i => i.id)
+      let selection = arr.map(thing => thing.references).flat().filter(t => t.datasets.includes(model.dataset)).map(i => i.id)
+      console.log(`selection`, selection)
       selectionArray.push(selection)
     }
     if (selectionArray.length > 0) {
+      console.log(`selectionArray.flat()`, selectionArray.flat())
       setSelection(selectionArray.flat());
     }
   }
 
   useEffect(() => {
+    console.log(`selectedElements`, selectedElements)
     if (selectedElements.length > 0) {
       setViewerSelection(selectedElements);
     }
   }, [selectedElements]);
 
-  useEffect(() => {
-    console.log("reset selection id");
-    setSelection((sel) => []);
-  }, [selectionId]);
-
 
   async function onSelect(items) {
-    console.log(`items 123`, items)
-    const references = await findReferenceEndpoints(project, session)
+    const part = await getLdpMembers(project, session)
+    const references = await findReferenceEndpoints(part, session)
+    const sel = []
     for (const model of models) {
       for (const ref of references) {
-        console.log(`ref`, ref)
         const options = {
           headers: {
             "Content-Type": "application/json"
@@ -178,10 +176,21 @@ const LBDviewer = (props) => {
           method: "POST",
           body: JSON.stringify({"selection": [{dataset: model.dataset, identifiers: items}]})
         }
-        const viewerSelection = await session.fetch(ref, options).then(r => r.json())
-        console.log(`viewerSelection`, viewerSelection)
+        const viewerSelection = await session.fetch(ref + '/storage/query', options).then(r => r.json())
+        
+        if (viewerSelection.length > 0 && viewerSelection[0].alias) {
+          for (const a of viewerSelection[0].alias) {
+            console.log(`a`, a)
+            const alias = await session.fetch(a).then(i => i.json())
+            console.log(`alias`, alias)
+            sel.push(alias)
+          }
+        }
+        sel.push(viewerSelection)
       }
     }
+    console.log(`sel`, sel.flat())
+    setSelectedElements(sel.flat())
   }
 
   return (

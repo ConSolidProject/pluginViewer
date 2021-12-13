@@ -46,7 +46,9 @@ const App = (props) => {
 
   useEffect(() => {
     async function filterGlTF() {
-      const res = await getDistributionsByMediaType(datasets, "model/gltf+json", session)
+      console.log("filtering")
+      const res = await getDistributionsByMediaType(datasets, ["model/gltf+json"], session)
+      console.log(`res`, res)
       setGltf(res)
     }
     filterGlTF();
